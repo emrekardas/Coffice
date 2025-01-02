@@ -6,6 +6,8 @@ import FilterSection from '../components/FilterSection';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+const API_URL = 'https://coffice-web-server.onrender.com';
+
 const HomePage = () => {
   const [cafes, setCafes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ const HomePage = () => {
   const fetchCafes = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://127.0.0.1:3000/api/cafes', {
+      const response = await axios.get(`${API_URL}/api/cafes`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -52,7 +54,7 @@ const HomePage = () => {
         params.append('rating', newFilters.rating);
       }
       
-      const url = `http://127.0.0.1:3000/api/cafes${newFilters.rating ? '/filter' : ''}?${params}`;
+      const url = `${API_URL}/api/cafes${newFilters.rating ? '/filter' : ''}?${params}`;
       const response = await axios.get(url, {
         headers: {
           'Accept': 'application/json',

@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import axios from 'axios';
 
+const API_URL = 'https://coffice-web-server.onrender.com';
+
 const CafeDetail = () => {
   const { id } = useParams();
   const [cafe, setCafe] = useState(null);
@@ -72,7 +74,7 @@ const CafeDetail = () => {
     const fetchCafeDetail = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://127.0.0.1:3000/api/cafes/${id}`);
+        const response = await axios.get(`${API_URL}/api/cafes/${id}`);
         setCafe(response.data);
         setError(null);
       } catch (err) {
