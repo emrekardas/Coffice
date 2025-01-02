@@ -12,7 +12,12 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  tls: true,
+  tlsInsecure: true,
+  minPoolSize: 0,
+  maxPoolSize: 10,
+  retryWrites: true
 });
 
 async function run() {
