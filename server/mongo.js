@@ -12,7 +12,11 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  ssl: true,
+  sslValidate: false,
+  tlsAllowInvalidCertificates: true,
+  directConnection: true
 });
 
 async function run() {
