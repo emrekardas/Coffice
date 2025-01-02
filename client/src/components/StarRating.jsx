@@ -9,7 +9,9 @@ const StarRating = ({ rating, showScore = true }) => {
     <div className="flex items-center">
       {[...Array(5)].map((_, index) => {
         if (index < fullStars) {
-          return <SolidStarIcon key={index} className="h-5 w-5 text-yellow-400" />;
+          return (
+            <SolidStarIcon key={index} className="h-5 w-5 text-yellow-400" />
+          );
         } else if (index === fullStars && hasHalfStar) {
           return (
             <div key={index} className="relative h-5 w-5">
@@ -20,7 +22,9 @@ const StarRating = ({ rating, showScore = true }) => {
             </div>
           );
         } else {
-          return <OutlineStarIcon key={index} className="h-5 w-5 text-yellow-400" />;
+          return (
+            <OutlineStarIcon key={index} className="h-5 w-5 text-yellow-400" />
+          );
         }
       })}
       {showScore && (
@@ -30,4 +34,4 @@ const StarRating = ({ rating, showScore = true }) => {
   );
 };
 
-export default StarRating; 
+export default StarRating;

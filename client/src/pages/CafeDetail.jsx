@@ -89,9 +89,8 @@ const CafeDetail = () => {
   if (loading || error || !cafe) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="h-16 bg-white shadow-sm"></div> {/* Header placeholder */}
         <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-screen pt-16">
           {loading && (
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           )}
@@ -115,14 +114,14 @@ const CafeDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="pt-16">
+      <main className="pt-16 pb-24">
         {/* Hero Section */}
-        <div className="relative h-[50vh] md:h-[60vh] bg-gray-900">
-          {/* Back Button - Absolute positioned over hero */}
-          <div className="absolute top-6 left-4 z-10">
+        <div className="relative h-[70vh] bg-gray-900 mb-16">
+          {/* Back Button */}
+          <div className="absolute top-6 left-4 z-20">
             <Link
               to="/"
-              className="inline-flex items-center px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white transition-all duration-200 shadow-lg"
+              className="inline-flex items-center px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:scale-105 transition-all duration-200 shadow-lg"
             >
               <ArrowLeftIcon className="h-5 w-5 mr-2" />
               Back to Cafes
@@ -132,69 +131,84 @@ const CafeDetail = () => {
           {/* Hero Content */}
           <div className="relative h-full">
             {imageLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+                  <p className="text-gray-400 text-sm font-medium">Loading image...</p>
+                </div>
               </div>
             )}
             {imageError ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
-                <span className="text-gray-400">Image unavailable</span>
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
+                <div className="flex flex-col items-center space-y-4 px-4 text-center">
+                  <div className="rounded-full bg-gray-700/50 p-4">
+                    <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 font-medium">Image unavailable</p>
+                  <p className="text-gray-500 text-sm">We couldn't load the cafe image</p>
+                </div>
               </div>
             ) : (
               <>
                 <img
                   src={`https://coffee.alexflipnote.dev/${getImageNumber(cafe._id)}.png`}
                   alt={cafe.title}
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${
-                    imageLoading ? 'opacity-0' : 'opacity-50'
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${
+                    imageLoading ? 'opacity-0' : 'opacity-40'
                   }`}
                   onError={handleImageError}
                   onLoad={handleImageLoad}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-gray-900/30"></div>
               </>
             )}
 
             {/* Hero Text Content */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 lg:p-12">
-              <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-                  {cafe.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-4 text-white">
-                  <div className="flex items-center">
-                    <StarRating rating={parseFloat(cafe.rating)} />
-                    {cafe.reviews && (
-                      <span className="ml-2 text-gray-300">
-                        ({cafe.reviews} reviews)
+            <div className="absolute inset-x-0 bottom-0 z-20">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 md:pb-16">
+                <div className="relative bg-black/30 backdrop-blur-sm rounded-2xl p-6 md:p-8">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                    {cafe.title}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-4 text-white">
+                    <div className="flex items-center bg-black/20 px-3 py-1.5 rounded-full">
+                      <StarRating rating={parseFloat(cafe.rating)} />
+                      {cafe.reviews && (
+                        <span className="ml-2 text-gray-200 text-sm">
+                          ({cafe.reviews} reviews)
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center bg-black/20 px-3 py-1.5 rounded-full">
+                      <MapPinIcon className="h-5 w-5 text-gray-200 mr-1.5" />
+                      <span className="text-gray-200 text-sm">
+                        {extractLocation(cafe["Google Maps Link"] || cafe.address)}
                       </span>
-                    )}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPinIcon className="h-5 w-5 text-gray-300 mr-1" />
-                    <span className="text-gray-300">
-                      {extractLocation(cafe["Google Maps Link"] || cafe.address)}
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="absolute top-6 right-4 z-10 flex space-x-2">
+            <div className="absolute top-6 right-4 z-20 flex space-x-2">
               <button
                 onClick={toggleFavorite}
                 className={`p-3 rounded-full backdrop-blur-sm transition-all duration-200 ${
                   isFavorite 
-                    ? 'bg-primary text-white' 
+                    ? 'bg-primary text-white scale-105' 
                     : 'bg-white/90 text-gray-700 hover:bg-white'
                 } shadow-lg hover:scale-105`}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <HeartIcon className="h-6 w-6" />
               </button>
               <button
                 onClick={handleShare}
                 className="p-3 rounded-full bg-white/90 backdrop-blur-sm text-gray-700 shadow-lg hover:bg-white hover:scale-105 transition-all duration-200"
+                aria-label="Share"
               >
                 <ShareIcon className="h-6 w-6" />
               </button>
@@ -203,12 +217,12 @@ const CafeDetail = () => {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-          <div className="bg-white rounded-xl shadow-xl p-6 md:p-8 lg:p-10">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32">
+          <div className="bg-white rounded-xl shadow-xl p-6 md:p-8 lg:p-10 mb-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Info Cards */}
               <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
                   <div className="flex items-start space-x-3">
                     <MapPinIcon className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                     <div>
@@ -217,10 +231,10 @@ const CafeDetail = () => {
                         href={mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-600 hover:text-primary transition-colors duration-200 flex items-center"
+                        className="text-gray-600 hover:text-primary transition-colors duration-200 flex items-center group"
                       >
                         {extractLocation(cafe["Google Maps Link"] || cafe.address)}
-                        <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-4 w-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                       </a>
@@ -229,7 +243,7 @@ const CafeDetail = () => {
                 </div>
 
                 {cafe.website && (
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-start space-x-3">
                       <GlobeAltIcon className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                       <div>
@@ -238,10 +252,10 @@ const CafeDetail = () => {
                           href={cafe.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-primary transition-colors duration-200 flex items-center"
+                          className="text-gray-600 hover:text-primary transition-colors duration-200 flex items-center group"
                         >
                           Visit Website
-                          <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="h-4 w-4 ml-1 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </a>
@@ -254,7 +268,7 @@ const CafeDetail = () => {
               {/* Stats Cards */}
               <div className="space-y-6">
                 {cafe.price_range && (
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-start space-x-3">
                       <CurrencyPoundIcon className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                       <div>
@@ -273,7 +287,7 @@ const CafeDetail = () => {
                 )}
 
                 {cafe.reviews && (
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
                     <div className="flex items-start space-x-3">
                       <ChatBubbleLeftIcon className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
                       <div>
@@ -293,27 +307,22 @@ const CafeDetail = () => {
 
             {/* Additional Info Section */}
             <div className="mt-10 pt-8 border-t border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">About this Space</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">About this Space</h2>
               <div className="prose prose-primary max-w-none">
                 <p className="text-gray-600 leading-relaxed">
                   {cafe.title} is a welcoming coffee shop located in {extractLocation(cafe["Google Maps Link"] || cafe.address)}, 
                   perfect for remote work, studying, or casual meetings. With its {cafe.price_range} pricing and 
                   {parseFloat(cafe.rating) >= 4.5 ? ' exceptional' : parseFloat(cafe.rating) >= 4.0 ? ' great' : ' good'} rating, 
                   this cafe has received {cafe.reviews} positive reviews from visitors, making it a popular choice among 
-                  London's coffee enthusiasts and remote workers alike.
+                  London&apos;s coffee enthusiasts and remote workers alike.
                 </p>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Map Section - Coming soon */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Map component will be added here */}
-        </div>
       </main>
 
-      <Footer />
+      <Footer className="mt-auto" />
     </div>
   );
 };

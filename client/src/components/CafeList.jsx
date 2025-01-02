@@ -26,4 +26,4 @@ const CafeList = ({ cafes, loading }) => {
   );
 };
 
-export default CafeList; 
+export default CafeList;
