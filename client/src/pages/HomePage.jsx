@@ -6,7 +6,7 @@ import FilterSection from '../components/FilterSection';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-const API_URL = 'https://coffice-web-server.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const HomePage = () => {
   const [cafes, setCafes] = useState([]);

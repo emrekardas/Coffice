@@ -32,6 +32,10 @@ const Header = () => {
     navigate('/');
   };
 
+  const getInitials = (name) => {
+    return name ? name.charAt(0).toUpperCase() : '?';
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -116,25 +120,44 @@ const Header = () => {
               <HeartIcon className="h-6 w-6" />
             </button>
             <div className="relative">
-              <button
-                onClick={() => user ? setIsProfileMenuOpen(!isProfileMenuOpen) : navigate('/auth')}
-                className={`p-2 rounded-full transition-all duration-200 ${
-                  isScrolled
-                    ? 'text-gray-600 hover:text-primary hover:bg-gray-100 hover:scale-105'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-800 hover:scale-105'
-                }`}
-                aria-label="Profile"
-              >
-                <UserCircleIcon className="h-6 w-6" />
-              </button>
+              {user ? (
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className={`flex items-center space-x-2 p-2 rounded-full transition-all duration-200 ${
+                    isScrolled
+                      ? 'text-gray-600 hover:text-primary hover:bg-gray-100'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                  }`}
+                  aria-label="Profile"
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    isScrolled ? 'bg-primary text-white' : 'bg-white text-primary'
+                  }`}>
+                    {getInitials(user.name)}
+                  </div>
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/auth')}
+                  className={`p-2 rounded-full transition-all duration-200 ${
+                    isScrolled
+                      ? 'text-gray-600 hover:text-primary hover:bg-gray-100 hover:scale-105'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800 hover:scale-105'
+                  }`}
+                  aria-label="Profile"
+                >
+                  <UserCircleIcon className="h-6 w-6" />
+                </button>
+              )}
 
               {/* Profile Menu */}
               {isProfileMenuOpen && user && (
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
                   <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                    {user.email}
+                    <div className="font-medium">{user.name}</div>
+                    <div className="text-gray-500 text-xs mt-0.5">{user.email}</div>
                   </div>
-                  {user.isAdmin && (
+                  {user.role === 'admin' && (
                     <Link
                       to="/admin"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
