@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
       setAuthToken(token);
       axios.get('/api/auth/me')
         .then(response => {
-          setCurrentUser(response.data);
+          setCurrentUser(response.data.user);
         })
         .catch(() => {
           setAuthToken(null);

@@ -49,7 +49,8 @@ export default function AuthPage() {
         await signup(email, password, username);
         showAlert('success', 'Kayıt başarılı! Yönlendiriliyorsunuz...');
       } else {
-        await login(email, password);
+        const loginValue = email;
+        await login(loginValue, password);
         showAlert('success', 'Giriş başarılı! Yönlendiriliyorsunuz...');
       }
       setTimeout(() => {
@@ -136,12 +137,12 @@ export default function AuthPage() {
 
               <div>
                 <input
-                  type="email"
+                  type={activeTab === 'register' ? 'email' : 'text'}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
-                  placeholder="E-posta adresi"
+                  placeholder={activeTab === 'register' ? 'E-posta adresi' : 'E-posta veya kullanıcı adı'}
                 />
               </div>
 

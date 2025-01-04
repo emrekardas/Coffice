@@ -8,11 +8,11 @@ const { auth } = require('../middleware/auth');
 const registerValidation = [
   check('email', 'Geçerli bir email adresi giriniz').isEmail(),
   check('password', 'Şifre en az 6 karakter olmalıdır').isLength({ min: 6 }),
-  check('name', 'İsim gereklidir').optional()
+  check('username', 'Kullanıcı adı en az 3 karakter olmalıdır').isLength({ min: 3 })
 ];
 
 const loginValidation = [
-  check('email', 'Geçerli bir email adresi giriniz').isEmail(),
+  check('login', 'Email veya kullanıcı adı gereklidir').exists(),
   check('password', 'Şifre gereklidir').exists()
 ];
 

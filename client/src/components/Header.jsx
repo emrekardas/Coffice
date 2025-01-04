@@ -133,7 +133,7 @@ const Header = () => {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     isScrolled ? 'bg-primary text-white' : 'bg-white text-primary'
                   }`}>
-                    {getInitials(user.name)}
+                    {getInitials(user.username)}
                   </div>
                 </button>
               ) : (
@@ -154,7 +154,7 @@ const Header = () => {
               {isProfileMenuOpen && user && (
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
                   <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                    <div className="font-medium">{user.name}</div>
+                    <div className="font-medium">{user.username}</div>
                     <div className="text-gray-500 text-xs mt-0.5">{user.email}</div>
                   </div>
                   {user.role === 'admin' && (
