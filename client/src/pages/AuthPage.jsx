@@ -8,11 +8,12 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { signup, login, resetPassword, signInWithGoogle } = useAuth();
+  const { signup, login, resetPassword } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -22,29 +23,17 @@ export default function AuthPage() {
     try {
       if (activeTab === 'register') {
         if (password !== confirmPassword) {
+          setLoading(false);
           setError('Şifreler eşleşmiyor');
           return;
         }
-        await signup(email, password);
+        await signup(email, password, name);
       } else {
         await login(email, password);
       }
       navigate('/');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleGoogleSignIn() {
-    try {
-      setError('');
-      setLoading(true);
-      await signInWithGoogle();
-      navigate('/');
-    } catch (err) {
-      setError('Google ile giriş başarısız oldu');
+    } catch (error) {
+      setError(error.message || 'Bir hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -62,8 +51,8 @@ export default function AuthPage() {
       setLoading(true);
       await resetPassword(email);
       setError('Şifre sıfırlama linki email adresinize gönderildi');
-    } catch (err) {
-      setError('Şifre sıfırlama başarısız oldu');
+    } catch (error) {
+      setError(error.message || 'Şifre sıfırlama başarısız oldu');
     } finally {
       setLoading(false);
     }
@@ -101,6 +90,19 @@ export default function AuthPage() {
           {/* Form Content */}
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {activeTab === 'register' && (
+                <div>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
+                    placeholder="Ad Soyad"
+                  />
+                </div>
+              )}
+
               <div>
                 <input
                   type="email"
@@ -168,42 +170,6 @@ export default function AuthPage() {
                 {loading ? 'Lütfen bekleyin...' : activeTab === 'login' ? 'Giriş yap' : 'Üye ol'}
               </button>
             </form>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">veya</span>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <img
-                    className="h-5 w-5 mr-2"
-                    src="https://www.svgrepo.com/show/475656/google-color.svg"
-                    alt="Google logo"
-                  />
-                  Google ile {activeTab === 'login' ? 'giriş yap' : 'kayıt ol'}
-                </button>
-
-                <button
-                  type="button"
-                  className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
-                >
-                  <div className="flex items-center justify-center">
-                    <span className="ml-2">Telefon numarası ile giriş yap</span>
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>

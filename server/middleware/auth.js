@@ -16,9 +16,16 @@ exports.auth = (req, res, next) => {
   }
 };
 
-exports.admin = (req, res, next) => {
-  if (!req.user.isAdmin) {
-    return res.status(403).json({ message: 'Admin yetkisi gerekli' });
-  }
-  next();
+exports.checkRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Yetkilendirme gerekli' });
+    }
+
+    if (roles.includes(req.user.role)) {
+      next();
+    } else {
+      res.status(403).json({ message: 'Bu işlem için yetkiniz yok' });
+    }
+  };
 }; 

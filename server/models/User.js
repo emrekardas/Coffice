@@ -2,23 +2,18 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  firebaseUID: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
   email: {
     type: String,
     required: true,
     unique: true
   },
-  name: {
+  password: {
     type: String,
     required: true
   },
-  password: {
+  name: {
     type: String,
-    required: false // Firebase auth için gerekli değil
+    required: true
   },
   profileImage: {
     type: String,
@@ -35,13 +30,18 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Sadece password varsa hash'le
+// Password hashing middleware
 userSchema.pre('save', async function(next) {
-  if (this.password && this.isModified('password')) {
+  if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });
+
+// Password comparison method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model('User', userSchema); 

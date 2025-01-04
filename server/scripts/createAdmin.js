@@ -25,7 +25,8 @@ async function createAdminUser() {
     const user = new User({
       email,
       password, // Model içindeki pre-save middleware şifreyi otomatik hash'leyecek
-      isAdmin: true
+      name: email.split('@')[0],
+      role: 'admin'
     });
 
     await user.save();

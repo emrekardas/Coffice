@@ -1,13 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithPopup
-} from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -20,76 +12,92 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // MongoDB ile kullanıcı senkronizasyonu
-  async function syncUserWithMongoDB(user) {
-    if (!user) return null;
-
-    try {
-      const response = await axios.post('/api/auth/sync-user', {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('MongoDB sync error:', error);
-      return null;
+  // Token işlemleri
+  const setAuthToken = (token) => {
+    if (token) {
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
     }
-  }
+  };
 
   // Kayıt ol
-  async function signup(email, password) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await syncUserWithMongoDB(userCredential.user);
-    return userCredential;
+  async function signup(email, password, name) {
+    try {
+      const response = await axios.post('/api/auth/register', {
+        email,
+        password,
+        name
+      });
+      
+      const { token, user } = response.data;
+      setAuthToken(token);
+      setCurrentUser(user);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Kayıt işlemi başarısız oldu';
+    }
   }
 
   // Email ile giriş yap
   async function login(email, password) {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    await syncUserWithMongoDB(userCredential.user);
-    return userCredential;
-  }
-
-  // Google ile giriş yap
-  async function signInWithGoogle() {
-    const userCredential = await signInWithPopup(auth, googleProvider);
-    await syncUserWithMongoDB(userCredential.user);
-    return userCredential;
+    try {
+      const response = await axios.post('/api/auth/login', {
+        email,
+        password
+      });
+      
+      const { token, user } = response.data;
+      setAuthToken(token);
+      setCurrentUser(user);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Giriş işlemi başarısız oldu';
+    }
   }
 
   // Çıkış yap
   function logout() {
-    return signOut(auth);
+    setAuthToken(null);
+    setCurrentUser(null);
   }
 
   // Şifre sıfırlama
-  function resetPassword(email) {
-    return sendPasswordResetEmail(auth, email);
+  async function resetPassword(email) {
+    try {
+      const response = await axios.post('/api/auth/reset-password', { email });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Şifre sıfırlama başarısız oldu';
+    }
   }
 
-  // Kullanıcı durumunu izle
+  // Kullanıcı durumunu kontrol et
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const mongoUser = await syncUserWithMongoDB(user);
-        setCurrentUser({ ...user, mongoData: mongoUser });
-      } else {
-        setCurrentUser(null);
-      }
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthToken(token);
+      axios.get('/api/auth/me')
+        .then(response => {
+          setCurrentUser(response.data);
+        })
+        .catch(() => {
+          setAuthToken(null);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
       setLoading(false);
-    });
-
-    return unsubscribe;
+    }
   }, []);
 
   const value = {
     currentUser,
     signup,
     login,
-    signInWithGoogle,
     logout,
     resetPassword
   };
@@ -99,4 +107,10 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   );
-} 
+}
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
+export default AuthContext; 
