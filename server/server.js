@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const { run } = require('./mongo');
 const { MongoClient, ObjectId } = require('mongodb');
+const authRoutes = require('./routes/auth');
 require('dotenv').config();
 
 const app = express();
@@ -10,6 +11,9 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));

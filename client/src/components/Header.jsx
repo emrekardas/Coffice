@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, UserCircleIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,6 +15,22 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Kullanıcı bilgisini localStorage'dan al
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsProfileMenuOpen(false);
+    navigate('/');
+  };
 
   return (
     <header 
@@ -96,16 +115,43 @@ const Header = () => {
             >
               <HeartIcon className="h-6 w-6" />
             </button>
-            <button
-              className={`p-2 rounded-full transition-all duration-200 ${
-                isScrolled
-                  ? 'text-gray-600 hover:text-primary hover:bg-gray-100 hover:scale-105'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-800 hover:scale-105'
-              }`}
-              aria-label="Profile"
-            >
-              <UserCircleIcon className="h-6 w-6" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => user ? setIsProfileMenuOpen(!isProfileMenuOpen) : navigate('/auth')}
+                className={`p-2 rounded-full transition-all duration-200 ${
+                  isScrolled
+                    ? 'text-gray-600 hover:text-primary hover:bg-gray-100 hover:scale-105'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-800 hover:scale-105'
+                }`}
+                aria-label="Profile"
+              >
+                <UserCircleIcon className="h-6 w-6" />
+              </button>
+
+              {/* Profile Menu */}
+              {isProfileMenuOpen && user && (
+                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
+                  <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                    {user.email}
+                  </div>
+                  {user.isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Çıkış Yap
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
