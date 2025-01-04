@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Alert from '../components/Alert';
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
@@ -10,30 +11,52 @@ export default function AuthPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { signup, login, resetPassword } = useAuth();
 
+  const showAlert = (type, message) => {
+    setAlert({ type, message });
+  };
+
+  const clearAlert = () => {
+    setAlert(null);
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
+    clearAlert();
     setLoading(true);
 
     try {
       if (activeTab === 'register') {
         if (password !== confirmPassword) {
           setLoading(false);
-          setError('Şifreler eşleşmiyor');
+          showAlert('error', 'Şifreler eşleşmiyor');
+          return;
+        }
+        if (password.length < 6) {
+          setLoading(false);
+          showAlert('error', 'Şifre en az 6 karakter olmalıdır');
+          return;
+        }
+        if (username.length < 3) {
+          setLoading(false);
+          showAlert('error', 'Kullanıcı adı en az 3 karakter olmalıdır');
           return;
         }
         await signup(email, password, username);
+        showAlert('success', 'Kayıt başarılı! Yönlendiriliyorsunuz...');
       } else {
         await login(email, password);
+        showAlert('success', 'Giriş başarılı! Yönlendiriliyorsunuz...');
       }
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     } catch (error) {
-      setError(error.message || 'Bir hata oluştu');
+      showAlert('error', error.message || 'Bir hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -43,16 +66,16 @@ export default function AuthPage() {
     e.preventDefault();
     
     if (!email) {
-      return setError('Şifre sıfırlamak için email adresinizi girin');
+      return showAlert('error', 'Şifre sıfırlamak için email adresinizi girin');
     }
 
     try {
-      setError('');
+      clearAlert();
       setLoading(true);
       await resetPassword(email);
-      setError('Şifre sıfırlama linki email adresinize gönderildi');
+      showAlert('success', 'Şifre sıfırlama linki email adresinize gönderildi');
     } catch (error) {
-      setError(error.message || 'Şifre sıfırlama başarısız oldu');
+      showAlert('error', error.message || 'Şifre sıfırlama başarısız oldu');
     } finally {
       setLoading(false);
     }
@@ -61,6 +84,13 @@ export default function AuthPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
+      {alert && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={clearAlert}
+        />
+      )}
       <div className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
           {/* Tab Headers */}
@@ -99,6 +129,7 @@ export default function AuthPage() {
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     placeholder="Kullanıcı Adı"
+                    minLength={3}
                   />
                 </div>
               )}
@@ -109,16 +140,9 @@ export default function AuthPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md ${
-                    error && error.includes('email') ? 'border-red-500' : 'border-gray-300'
-                  } focus:outline-none focus:ring-1 focus:ring-indigo-600`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
                   placeholder="E-posta adresi"
                 />
-                {error && error.includes('email') && (
-                  <p className="mt-1 text-xs text-red-500">
-                    Geçerli bir e-posta adresi girmelisiniz.
-                  </p>
-                )}
               </div>
 
               <div>
@@ -129,6 +153,7 @@ export default function AuthPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
                   placeholder="Şifre"
+                  minLength={6}
                 />
               </div>
 
@@ -141,12 +166,9 @@ export default function AuthPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
                     placeholder="Şifre Tekrar"
+                    minLength={6}
                   />
                 </div>
-              )}
-
-              {error && !error.includes('email') && (
-                <div className="text-red-500 text-sm text-center">{error}</div>
               )}
 
               {activeTab === 'login' && (
