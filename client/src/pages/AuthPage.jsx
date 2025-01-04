@@ -1,53 +1,73 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState('login'); // 'login' veya 'register'
+  const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signup, login, resetPassword, signInWithGoogle } = useAuth();
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (activeTab === 'register' && password !== confirmPassword) {
-      setError('Şifreler eşleşmiyor');
-      return;
+    try {
+      if (activeTab === 'register') {
+        if (password !== confirmPassword) {
+          setError('Şifreler eşleşmiyor');
+          return;
+        }
+        await signup(email, password);
+      } else {
+        await login(email, password);
+      }
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      setError('');
+      setLoading(true);
+      await signInWithGoogle();
+      navigate('/');
+    } catch (err) {
+      setError('Google ile giriş başarısız oldu');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResetPassword(e) {
+    e.preventDefault();
+    
+    if (!email) {
+      return setError('Şifre sıfırlamak için email adresinizi girin');
     }
 
     try {
-      const endpoint = activeTab === 'login' ? 'login' : 'register';
-      const response = await fetch(`http://localhost:3000/api/auth/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `${activeTab === 'login' ? 'Giriş yapılamadı' : 'Kayıt oluşturulamadı'}`);
-      }
-
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      if (data.user.isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      setError('');
+      setLoading(true);
+      await resetPassword(email);
+      setError('Şifre sıfırlama linki email adresinize gönderildi');
     } catch (err) {
-      setError(err.message);
+      setError('Şifre sıfırlama başarısız oldu');
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -132,10 +152,7 @@ export default function AuthPage() {
                   <a
                     href="#"
                     className="text-sm text-indigo-600 hover:text-indigo-700"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Şifremi unuttum fonksiyonu
-                    }}
+                    onClick={handleResetPassword}
                   >
                     Şifremi unuttum
                   </a>
@@ -144,10 +161,11 @@ export default function AuthPage() {
 
               <button
                 type="submit"
+                disabled={loading}
                 style={{ backgroundColor: 'rgb(67 56 202)' }}
-                className="w-full py-2 px-4 border border-transparent rounded-md text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
+                className="w-full py-2 px-4 border border-transparent rounded-md text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 disabled:opacity-50"
               >
-                {activeTab === 'login' ? 'Giriş yap' : 'Üye ol'}
+                {loading ? 'Lütfen bekleyin...' : activeTab === 'login' ? 'Giriş yap' : 'Üye ol'}
               </button>
             </form>
 
@@ -161,7 +179,21 @@ export default function AuthPage() {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-6 space-y-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <img
+                    className="h-5 w-5 mr-2"
+                    src="https://www.svgrepo.com/show/475656/google-color.svg"
+                    alt="Google logo"
+                  />
+                  Google ile {activeTab === 'login' ? 'giriş yap' : 'kayıt ol'}
+                </button>
+
                 <button
                   type="button"
                   className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
