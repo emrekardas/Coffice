@@ -7,8 +7,8 @@ import Footer from '../components/Footer';
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function AuthPage() {
           setError('Şifreler eşleşmiyor');
           return;
         }
-        await signup(email, password, name);
+        await signup(email, password, username);
       } else {
         await login(email, password);
       }
@@ -95,10 +95,10 @@ export default function AuthPage() {
                   <input
                     type="text"
                     required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-600"
-                    placeholder="Ad Soyad"
+                    placeholder="Kullanıcı Adı"
                   />
                 </div>
               )}

@@ -7,6 +7,7 @@ const createToken = (user) => {
   return jwt.sign(
     { 
       userId: user._id, 
+      username: user.username,
       email: user.email, 
       role: user.role 
     },
@@ -23,12 +24,20 @@ exports.register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, name } = req.body;
+    const { username, email, password } = req.body;
 
-    // Email kontrolü
-    const existingUser = await User.findOne({ email });
+    // Email ve username kontrolü
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }]
+    });
+    
     if (existingUser) {
-      return res.status(400).json({ message: 'Bu email adresi zaten kayıtlı.' });
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Bu email adresi zaten kayıtlı.' });
+      }
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Bu kullanıcı adı zaten alınmış.' });
+      }
     }
 
     // İlk kullanıcıyı admin yap
@@ -36,9 +45,9 @@ exports.register = async (req, res) => {
 
     // Yeni kullanıcı oluşturma
     const user = new User({
+      username,
       email,
       password,
-      name: name || email.split('@')[0],
       role: isFirstUser ? 'admin' : 'user'
     });
 
@@ -52,8 +61,8 @@ exports.register = async (req, res) => {
       token,
       user: {
         id: user._id,
+        username: user.username,
         email: user.email,
-        name: user.name,
         role: user.role
       }
     });
@@ -70,18 +79,24 @@ exports.login = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { login, password } = req.body; // login can be username or email
 
     // Kullanıcı kontrolü
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [
+        { email: login.toLowerCase() },
+        { username: login }
+      ]
+    });
+
     if (!user) {
-      return res.status(401).json({ message: 'Email veya şifre hatalı' });
+      return res.status(401).json({ message: 'Kullanıcı adı/email veya şifre hatalı' });
     }
 
     // Şifre kontrolü
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Email veya şifre hatalı' });
+      return res.status(401).json({ message: 'Kullanıcı adı/email veya şifre hatalı' });
     }
 
     // Token oluşturma
@@ -92,8 +107,8 @@ exports.login = async (req, res) => {
       token,
       user: {
         id: user._id,
+        username: user.username,
         email: user.email,
-        name: user.name,
         role: user.role
       }
     });

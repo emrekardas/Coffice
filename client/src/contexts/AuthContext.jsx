@@ -24,12 +24,12 @@ export function AuthProvider({ children }) {
   };
 
   // Kayıt ol
-  async function signup(email, password, name) {
+  async function signup(email, password, username) {
     try {
       const response = await axios.post('/api/auth/register', {
         email,
         password,
-        name
+        username
       });
       
       const { token, user } = response.data;
@@ -41,11 +41,11 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Email ile giriş yap
-  async function login(email, password) {
+  // Giriş yap
+  async function login(login, password) {
     try {
       const response = await axios.post('/api/auth/login', {
-        email,
+        login, // email veya username olabilir
         password
       });
       
