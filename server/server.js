@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { run } = require('./mongo');
+const { run, mongoose } = require('./mongo');
 const { MongoClient, ObjectId } = require('mongodb');
 const authRoutes = require('./routes/auth');
 require('dotenv').config();
