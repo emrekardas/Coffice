@@ -2,20 +2,32 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+  firebaseUID: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   email: {
     type: String,
     required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
+    unique: true
   },
-  password: {
+  name: {
     type: String,
     required: true
   },
-  isAdmin: {
-    type: Boolean,
-    default: false
+  password: {
+    type: String,
+    required: false // Firebase auth için gerekli değil
+  },
+  profileImage: {
+    type: String,
+    default: null
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   createdAt: {
     type: Date,
@@ -23,23 +35,13 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Password hash middleware
+// Sadece password varsa hash'le
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
+  if (this.password && this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
   }
+  next();
 });
 
-// Password verification helper
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-const User = mongoose.model('User', userSchema);
-module.exports = User; 
+module.exports = mongoose.model('User', userSchema); 
